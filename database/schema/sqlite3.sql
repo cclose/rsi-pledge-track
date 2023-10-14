@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS PledgeData (
+    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    TimeStamp DATETIME NOT NULL,
+    Funding INTEGER,
+    Citizens INTEGER,
+    Fleet INTEGER,
+    UNIQUE (TimeStamp)
+);

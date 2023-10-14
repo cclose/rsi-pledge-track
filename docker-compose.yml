@@ -1,0 +1,37 @@
+version: "3.7"
+
+services:
+  rsi-pt-postgres:
+    image: "postgres:16.0"
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - "./database/postgres/postgres.conf:/etc/postgresql/postgresql.conf"
+      - "./database/schema/postgres.sql:/docker-entrypoint-initdb.d/rsi-pt.sql"
+    #command: "postgres -c config_file=/usr/local/etc/postgres/postgres.conf"
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+      interval: 2s
+      timeout: 5s
+      retries: 5
+  rsi-pt-app:
+    build: .
+    #entrypoint: [ "/app/wait-for-db.sh" ]
+    environment:
+      DB_HOST: rsi-pt-postgres
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME}
+      DB_PORT: 5432
+      PORT: 8085
+      START_DELAY: 10
+    ports:
+      - "8085:8085"
+    depends_on:
+      rsi-pt-postgres:
+        condition: service_healthy

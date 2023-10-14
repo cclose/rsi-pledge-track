@@ -1,0 +1,9 @@
+*.txt
+*.md
+*.sw*
+*.sql
+*.log
+*.out
+[dD]ocker*
+.env
+.idea
