@@ -4,10 +4,19 @@ import (
 	"github.com/jmoiron/sqlx"
 	logger "github.com/sirupsen/logrus"
 	"github.org/cclose/rsi-pledge-track/model"
+	"time"
 )
 
 // const insertQueryText = "INSERT INTO PledgeData (TimeStamp, Funding, Citizens, Fleet) VALUES($1, $2, $3, $4)"
 const insertQueryText = `INSERT INTO PledgeData (Timestamp, Funding, Citizens, Fleet) VALUES (:TimeStamp, :Funding, :Citizens, :Fleet)`
+
+type IPledgeDataService interface {
+	Insert(pd *model.PledgeData) error
+	Get(id int, offset int) (*model.PledgeData, error)
+	GetAll(offset int, limit int) ([]*model.PledgeData, error)
+	GetByTimestamp(time time.Time, offset int) (*model.PledgeData, error)
+	GetAfterTimestamp(time time.Time, offset int, limit int) ([]*model.PledgeData, error)
+}
 
 type PledgeDataService struct {
 	DB *sqlx.DB
@@ -36,7 +45,7 @@ func (s *PledgeDataService) Insert(pd *model.PledgeData) error {
 
 const getPledgeDataQuery = `SELECT ` + pledgeDataCol + ` FROM PledgeData WHERE ID = $1`
 
-func (s *PledgeDataService) Get(id int) (*model.PledgeData, error) {
+func (s *PledgeDataService) Get(id int, offset int) (*model.PledgeData, error) {
 	logger.Info("calling Get")
 	var pledgeData model.PledgeData
 	err := s.DB.Get(&pledgeData, getPledgeDataQuery, id)
@@ -46,10 +55,18 @@ func (s *PledgeDataService) Get(id int) (*model.PledgeData, error) {
 
 const getAllPledgeDataQuery = `SELECT ` + pledgeDataCol + ` FROM PledgeData`
 
-func (s *PledgeDataService) GetAll() ([]*model.PledgeData, error) {
+func (s *PledgeDataService) GetAll(offset int, limit int) ([]*model.PledgeData, error) {
 	logger.Info("calling GetAll")
 	var pledgeDataList []*model.PledgeData
 	err := s.DB.Select(&pledgeDataList, getAllPledgeDataQuery)
 
 	return pledgeDataList, err
+}
+
+func (s *PledgeDataService) GetByTimestamp(time time.Time, offset int) (*model.PledgeData, error) {
+	return nil, nil
+}
+
+func (s *PledgeDataService) GetAfterTimestamp(time time.Time, offset int, limit int) ([]*model.PledgeData, error) {
+	return nil, nil
 }
