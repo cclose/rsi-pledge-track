@@ -53,6 +53,7 @@ func main() {
 	}
 
 	e := echo.New()
+	e.Renderer = pdc
 
 	// Route to retrieve data in different formats
 	e.GET("/pledge-data", pdc.GetPledgeData)

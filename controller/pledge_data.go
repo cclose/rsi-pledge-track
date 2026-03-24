@@ -7,6 +7,9 @@ import (
 	logger "github.com/sirupsen/logrus"
 	"github.org/cclose/rsi-pledge-track/model"
 	"github.org/cclose/rsi-pledge-track/service"
+	tmpl "github.org/cclose/rsi-pledge-track/template"
+	"html/template"
+	"io"
 	"net/http"
 	"time"
 )
@@ -38,36 +41,57 @@ func NewPledgeDataController(pds service.IPledgeDataService) *PledgeData {
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /pledge-data [get]
 func (pdc *PledgeData) GetPledgeData(c echo.Context) error {
+	logger.Printf("Request: %s::%s\n", c.Path(), c.QueryString())
 	gpdReq := &model.PledgeDataRequest{}
 	err := gpdReq.ParseRequest(c)
 	if err != nil {
+		logger.Errorf("Bad Request: %v\n", err)
 		return c.String(http.StatusBadRequest, err.Error())
 	}
+	logger.Printf("Parsed Request: %v\n", gpdReq)
 
 	var data []*model.PledgeData
-	if gpdReq.TimeStamp != zeroTime {
-		var dataEntry *model.PledgeData
+	var dataEntry *model.PledgeData
+	if gpdReq.ID != 0 {
+		logger.Printf("Getting Id %d\n", gpdReq.ID)
+		dataEntry, err = pdc.pledgeDataService.Get(gpdReq.ID)
+		data = append(data, dataEntry)
+	} else if gpdReq.TimeStamp != zeroTime {
+		logger.Printf("Getting Timestamp %v\n", gpdReq.TimeStamp)
 		dataEntry, err = pdc.pledgeDataService.GetByTimestamp(gpdReq.TimeStamp, gpdReq.Offset)
 		data = append(data, dataEntry)
 	} else if gpdReq.AfterTimestamp != zeroTime {
+		logger.Printf("Getting After Timestamp %v\n", gpdReq.AfterTimestamp)
 		data, err = pdc.pledgeDataService.GetAfterTimestamp(gpdReq.AfterTimestamp, gpdReq.Offset, gpdReq.Limit)
 	} else {
-		data, err = pdc.pledgeDataService.GetAll(gpdReq.Limit, gpdReq.Offset)
+		logger.Printf("Get All \n")
+		data, err = pdc.pledgeDataService.GetAll(gpdReq.Offset, gpdReq.Limit)
 	}
 	if err != nil {
 		logger.Error(err)
 	}
 
 	if gpdReq.Format == "json" || gpdReq.Format == "application/json" {
+		logger.Printf("Return JSON\n")
 		return c.JSON(http.StatusOK, data)
 	} else if gpdReq.Format == "csv" || gpdReq.Format == "text/csv" {
+		logger.Printf("Return CSV\n")
 		// Implement CSV response
 		return writeCSV(c, data)
 	} else {
-		// Implement HTML response
-		htmlResponse := "<html>...</html>"
-		return c.HTML(http.StatusOK, htmlResponse)
+		logger.Printf("Return Default... html\n")
+		return c.Render(http.StatusOK, "pledgeChart", data)
 	}
+}
+
+func (pdc *PledgeData) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
+	pctmpl, err := template.New(name).Parse(tmpl.PledgeChartTmpl)
+	if err != nil {
+		return err
+	}
+	c.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	return pctmpl.ExecuteTemplate(w, name, data)
 }
 
 func writeCSV(c echo.Context, data []*model.PledgeData) error {
