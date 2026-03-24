@@ -23,15 +23,15 @@ go.work
 
 .idea
 .env
-rsiAPI
-rsiApi
-rsiPullFunding
-runRPF.sh
-build
+/rsiAPI
+/rsiApi
+/rsiPullFunding
+/runRPF.sh
+/build
 
 # Ignore AWS Creds
 .aws
 aws_creds
 
 # Ignore binary outputs
-bootstrap
+/bootstrap
