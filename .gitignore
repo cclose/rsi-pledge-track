@@ -7,6 +7,7 @@
 *.dll
 *.so
 *.dylib
+*.zip
 
 # Test binary, built with `go test -c`
 *.test
@@ -23,5 +24,14 @@ go.work
 .idea
 .env
 rsiAPI
+rsiApi
 rsiPullFunding
 runRPF.sh
+build
+
+# Ignore AWS Creds
+.aws
+aws_creds
+
+# Ignore binary outputs
+bootstrap
