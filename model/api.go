@@ -33,6 +33,7 @@ var RequestFormatNegotiation = map[string]string{
 // PledgeDataRequest is a struct representing a request with a format and timestamp.
 type PledgeDataRequest struct {
 	Format         RequestFormat `query:"format"`   // Format specifies the request format.
+	ID             int           `query:"id"`       // ID specifies the specific ID you want
 	TimeStamp      time.Time     `query:"dateTime"` // TimeStamp specifies the request timestamp.
 	AfterTimestamp time.Time     `query:"startingDateTime"`
 	Offset         int           `query:"offset"`
@@ -43,11 +44,12 @@ type PledgeDataRequest struct {
 func (pdr *PledgeDataRequest) ParseRequest(c echo.Context) error {
 	format := ""
 	qpBinder := echo.QueryParamsBinder(c)
-	qpBinder.Time("timestamp", &pdr.TimeStamp, time.RFC3339)
-	qpBinder.Time("startingDateTime", &pdr.AfterTimestamp, time.RFC3339)
 	qpBinder.String("format", &format)
-	qpBinder.Int("offset", &pdr.Offset)
+	qpBinder.Int("id", &pdr.ID)
 	qpBinder.Int("limit", &pdr.Limit)
+	qpBinder.Int("offset", &pdr.Offset)
+	qpBinder.Time("startingDateTime", &pdr.AfterTimestamp, time.RFC3339)
+	qpBinder.Time("timestamp", &pdr.TimeStamp, time.RFC3339)
 	bindErrs := qpBinder.BindErrors()
 
 	errMsg := ""

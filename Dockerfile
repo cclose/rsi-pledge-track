@@ -18,6 +18,13 @@ EXPOSE $PORT
 
 ## Build the service
 WORKDIR /app
-COPY --from=build /go/src/rsiPullFunding /go/src/rsiAPI /go/src/cmd/rsiAPI/wait-for-db.sh /app/
+COPY --from=build /go/src/rsiAPI /app/
 
 ENTRYPOINT ["/app/rsiAPI"]
+
+FROM alpine:3.18 as cron
+
+WORKDIR /app
+COPY --from=build /go/src/rsiPullFunding /app/
+
+ENTRYPOINT ["/app/rsiPullFunding"]

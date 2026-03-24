@@ -15,15 +15,19 @@ func ConnectPSQLFromEnv() (*sqlx.DB, error) {
 	pass := os.Getenv("DB_PASS")
 	db := os.Getenv("DB_NAME")
 	port := os.Getenv("DB_PORT")
+	sslMode := os.Getenv("DB_SSL_MODE")
 
-	return ConnectPSQL(host, user, pass, db, port)
+	return ConnectPSQL(host, user, pass, db, port, sslMode)
 }
 
-func ConnectPSQL(host, user, pass, db, port string) (*sqlx.DB, error) {
+func ConnectPSQL(host, user, pass, db, port, sslMode string) (*sqlx.DB, error) {
+	if sslMode == "" {
+		sslMode = "disable"
+	}
 	// Now you can use the updated variables for your database connection
-	connectString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		host, port, user, pass, db)
-	logger.Debug("Connect to %s\n", connectString)
+	connectString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		host, port, user, pass, db, sslMode)
+	logger.Debugf("Connect to %s\n", connectString)
 
 	dbh, err := sqlx.Open("postgres", connectString)
 	if err != nil {
